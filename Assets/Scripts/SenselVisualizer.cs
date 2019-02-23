@@ -5,6 +5,9 @@ using Klak.Sensel;
 public class SenselVisualizer : MonoBehaviour
 {
     [SerializeField]
+    ForceMapManager _manager;
+
+    [SerializeField]
     Material _material;
 
     [System.Serializable]
@@ -12,28 +15,37 @@ public class SenselVisualizer : MonoBehaviour
     {
         Raw,
         Filtered,
-        Total
+        Total,
+        Convolved,
     };
 
     [SerializeField]
-    InputMode _mode;
+    InputMode _mode = InputMode.Raw;
 
     [SerializeField]
     Vector3 _accel;
 
     InputMode _prevMode;
-    ForceMap _forceMap;
 
     private void Awake()
     {
-        if (_material == null) {
+        if (_material == null)
+        {
             var renderer = GetComponent<Renderer>();
-            if (renderer != null) {
+            if (renderer != null)
+            {
                 _material = renderer.material;
             }
         }
-        _forceMap = new ForceMap();
+        if (_manager == null)
+        {
+            _manager = ForceMapManager.Instance;
+        }
         _prevMode = _mode;
+    }
+
+    private void Start()
+    {
         _material.SetTexture("_MainTex", GetTexture());
     }
 
@@ -44,30 +56,23 @@ public class SenselVisualizer : MonoBehaviour
             _prevMode = _mode;
             _material.SetTexture("_MainTex", GetTexture());
         }
-        _forceMap.Update();
 
         var accel = SenselMaster.Acceleration;
         _accel = new Vector3((int)accel.x, (int)accel.y, (int)accel.z).normalized;
-
-        if (_accel != Vector3.zero) {
-            transform.rotation = Quaternion.Euler(90, 0, 0) * Quaternion.LookRotation(_accel);
-        }
-    }
-
-    private void OnDestroy()
-    {
-        _forceMap.Dispose();
     }
 
     private Texture GetTexture()
     {
-        switch (_mode) {
+        switch (_mode)
+        {
             case InputMode.Raw:
-                return _forceMap.RawInputTexture;
+                return _manager.RawInputTexture;
             case InputMode.Filtered:
-                return _forceMap.FilteredInputTexture;
+                return _manager.FilteredInputTexture;
             case InputMode.Total:
-                return _forceMap.TotalInputTexture;
+                return _manager.TotalInputTexture;
+            case InputMode.Convolved:
+                return _manager.ConvolvedInputTexture;
             default:
                 return null;
         }

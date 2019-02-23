@@ -5,6 +5,8 @@
         _MainTex ("Texture", 2D) = "white" {}
         _Scale("Scale", Range(0, 1)) = 1
         _Power("Power", Range(0.01, 10)) = 1
+        _Extrude("Extrude Amount", Range(0, 1)) = 0
+        _Threshold("Threshold", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -39,12 +41,16 @@
 
             float _Scale;
             float _Power;
+            float _Threshold;
 
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+#if UNITY_UV_STARTS_AT_TOP
+                o.uv.y = 1 - o.uv.y;
+#endif
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }
@@ -54,6 +60,7 @@
                 // sample the texture
                 float a = tex2D(_MainTex, float2(i.uv.x, 1.0 - i.uv.y)).r;
                 a = pow(a, _Power) * _Scale;
+                a = a < _Threshold ? 0 : a;
 
                 fixed4 col = fixed4(a, a, a, 1.0);
 
