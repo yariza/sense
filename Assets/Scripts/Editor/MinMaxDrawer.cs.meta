@@ -1,10 +1,9 @@
 fileFormatVersion: 2
-guid: 035766581cc1740208b9bafd0fbd14a0
+guid: c79dbffcb1de441bb875dc15f7b532a6
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - _convolveShader: {fileID: 4800000, guid: c03eada4e88574381a80704d37f6b22a, type: 3}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

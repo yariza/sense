@@ -1,0 +1,95 @@
+#pragma kernel InitParticle
+#pragma kernel ComputeVelocity
+#pragma kernel UpdateParticle
+
+RWStructuredBuffer<float4> _PositionBuffer;
+RWTexture2D<float2> _RWVelocityTex;
+Texture2D<float2> _VelocityTex;
+SamplerState sampler_VelocityTex;
+Texture2D<float> _InputTex;
+
+uint _MaxParticles;
+float2 _LifeParams;
+uint2 _Resolution;
+float4 _Bounds;
+float _Speed;
+float4 _Config;
+
+[numthreads(8,8,1)]
+void ComputeVelocity(uint3 id : SV_DISPATCHTHREADID)
+{
+    uint2 uv = id.xy * 2;
+    if (any(uv >= _Resolution.xy)) return;
+
+    float tl = _InputTex[uv];
+    float tr = _InputTex[uv + uint2(1,0)];
+    float bl = _InputTex[uv + uint2(0,1)];
+    float br = _InputTex[uv + uint2(1,1)];
+
+    float dx = lerp(tr - tl, br - bl, 0.5);
+    float dy = lerp(bl - tl, br - tr, 0.5);
+
+    _RWVelocityTex[id.xy] = float2(-dy, dx) * (_Bounds.y * (float)_Resolution.y);
+}
+
+// PRNG function
+float nrand(uint3 id, float salt)
+{
+    float2 uv = float2((float)id.x / _MaxParticles, (float)id.x % 256.0);
+    uv += float2(salt, _Config.y);
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float4 new_particle_position(uint3 id)
+{
+    float t = _Config.w;
+
+    float2 pos = float2(nrand(id, t + 1), nrand(id, t + 2));
+    pos -= (float2)0.5;
+    pos *= _Bounds.xy;
+
+    // Throttling: discards particle emission by adding offset.
+    float4 offs = float4(1e8, 1e8, 1e8, -1) * ((float)id.x > _Config.x * (float)_MaxParticles);
+
+    return float4(pos.x, pos.y, 0, 0.5) + offs;
+}
+
+[numthreads(512,1,1)]
+void InitParticle(uint3 id : SV_DISPATCHTHREADID)
+{
+    if (id.x >= _MaxParticles) return;
+
+    float4 pos = new_particle_position(id) - float4(0, 0, 0, nrand(id, 14));
+    _PositionBuffer[id.x] = pos;
+}
+
+[numthreads(512,1,1)]
+void UpdateParticle(uint3 id : SV_DISPATCHTHREADID)
+{
+    if (id.x >= _MaxParticles) return;
+
+    float4 pos = _PositionBuffer[id.x];
+
+    // Decaying
+    float dt = _Config.z;
+    pos.w -= lerp(_LifeParams.x, _LifeParams.y, nrand(id, 12)) * dt;
+
+    if (pos.w > -0.5)
+    {
+        // Applying the velocity
+        float2 uv = pos.xy;
+        uv /= _Bounds.xy;
+        uv += (float2)0.5;
+
+        float2 v = _VelocityTex.SampleLevel(sampler_VelocityTex, uv, 0).xy;
+        pos.xy += v * (_Speed * dt);
+    }
+    else
+    {
+        // Respawn
+        pos = new_particle_position(id);
+    }
+
+
+    _PositionBuffer[id.x] = pos;
+}

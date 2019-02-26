@@ -2,9 +2,6 @@
 {
     Properties
     {
-        _MainTex("", 2D) = ""
-        _RawInputTex("", 2D) = ""
-        _Interpolant("", Float) = 1
     }
 
     CGINCLUDE

@@ -1,0 +1,14 @@
+﻿#pragma kernel Init
+
+RWTexture2D<float> _InputTex;
+RWTexture3D<float> _VolumeTex;
+
+
+
+[numthreads(8,8,8)]
+void Init(uint3 id : SV_DISPATCHTHREADID)
+{
+    _VolumeTex[id.xyz] = 0;
+}
+
+

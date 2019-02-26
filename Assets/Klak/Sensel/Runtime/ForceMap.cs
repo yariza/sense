@@ -29,6 +29,8 @@ namespace Klak.Sensel
         RenderTexture _filteredInput;
         RenderTexture _totalInput;
         RenderTexture[] _pyramid = new RenderTexture[kLevelCount];
+        float _forceSum;
+        float _forceAverage;
 
         #endregion
 
@@ -44,6 +46,14 @@ namespace Klak.Sensel
 
         public Texture TotalInputTexture {
             get { return _totalInput; }
+        }
+
+        public float forceSum {
+            get { return _forceSum; }
+        }
+
+        public float forceAverage {
+            get { return _forceAverage; }
         }
 
         #endregion
@@ -89,6 +99,9 @@ namespace Klak.Sensel
         {
             SenselMaster.Update();
 
+            float sum = 0f;
+            float average = 0f;
+
             // Transfer the force array to the raw input texture.
             unsafe {
                 var input = SenselMaster.ForceArray;
@@ -99,8 +112,17 @@ namespace Klak.Sensel
                         sizeof(float) * input.Length
                     );
                     _rawInput.Apply();
+
+                    for (int i = 0; i < input.Length; i++)
+                    {
+                        sum += input[i];
+                    }
+                    average = sum / input.Length;
                 }
             }
+
+            _forceSum = sum;
+            _forceAverage = average;
 
             // Apply the prefilter (vertical flip).
             Graphics.Blit(_rawInput, _filteredInput, _filter, 0);

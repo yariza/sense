@@ -2,7 +2,7 @@
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _MainTex ("Texture", 2D) = "black" {}
         _Scale("Scale", Range(0, 1)) = 1
         _Power("Power", Range(0.01, 10)) = 1
         _Extrude("Extrude Amount", Range(0, 1)) = 0

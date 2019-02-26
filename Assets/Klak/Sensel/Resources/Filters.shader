@@ -23,6 +23,8 @@
 #if UNITY_UV_STARTS_AT_TOP
         uv.y = 1 - uv.y;
 #endif
+        uv = uv * 1.5 - 0.25;
+        if (any(uv < float2(0,0) || uv > float2(1,1))) return half4(0,0,0,0);
         return tex2D(_MainTex, uv).r * _Sensitivity;
     }
 
