@@ -5,7 +5,8 @@
         _Color("Color", Color) = (1,1,1,1)
         _Power("Power", Range(0.01, 10)) = 1
         _Scale("Scale", Range(0, 0.1)) = 0.01
-        _VelocityScale("Velocity Scale", Range(0, 100)) = 1
+        _VelocityScale("Velocity Scale", Range(0, 1)) = 1
+        _ColorMax("Color Min", Color) = (1,1,1,1)
     }
     SubShader
     {
@@ -27,6 +28,7 @@
             sampler2D _VelocityTex;
 
             float4 _Color;
+            float4 _ColorMax;
             float _Power;
             float _Scale;
             float _VelocityScale;
@@ -36,8 +38,7 @@
             {
                 float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
-                float2 velocity : TEXCOORD1;
-                float alpha : TEXCOORD2;
+                float4 color : TEXCOORD1;
             };
 
             #define SQRT_3 1.73205080757
@@ -65,17 +66,18 @@
                 float2 posUV = worldPos.xy;
                 posUV /= _Bounds.xy;
                 posUV += (float2)0.5;
-                // float2 v = _VelocityTex.SampleLevel(sampler_VelocityTex, posUV, 0);
+
                 float2 v = tex2Dlod(_VelocityTex, float4(posUV, 0, 0)).xy;
                 v *= _VelocityScale;
-                v += (float2)0.5;
-                // v = posUV;
+
+                float4 color;
+                color = lerp(_Color, _ColorMax, saturate(length(v) * _VelocityScale));
+                color *= min(1.0, 5.0 - abs(5.0 - life * 10));
 
                 v2f o;
                 o.vertex = clipPos;
                 o.uv = uv;
-                o.velocity = v;
-                o.alpha = min(1.0, 5.0 - abs(5.0 - life * 10));
+                o.color = color;
                 return o;
             }
 
@@ -85,11 +87,8 @@
                 clip(d);
                 d = pow(d, _Power);
 
-                float2 v = i.velocity;
-                fixed4 col = _Color;
-                float alpha = saturate(i.alpha);
-                alpha *= d;
-                col *= alpha;
+                fixed4 col = i.color;
+                col *= d;
                 return col;
             }
             ENDCG

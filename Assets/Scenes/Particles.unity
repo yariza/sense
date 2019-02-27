@@ -145,7 +145,7 @@ MonoBehaviour:
   _particleMaterial: {fileID: 2100000, guid: b00c733fee15f4d68867724f07a81e3c, type: 2}
   _maxParticles: 100000
   _lifeRange: {x: 12.0817995, y: 28.343563}
-  _speed: 0.05
+  _speed: 0.01
   _scale: 9
   _throttle: 1
   _randomSeed: 1234

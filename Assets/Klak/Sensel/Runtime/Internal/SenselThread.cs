@@ -182,6 +182,7 @@ namespace Klak.Sensel
 
                 } catch (System.Exception e) {
                     Debug.LogWarning(e);
+                    break;
                 }
 
             }

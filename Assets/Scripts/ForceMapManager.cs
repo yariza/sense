@@ -123,7 +123,7 @@ public class ForceMapManager : MonoBehaviour
         _forceSum = _forceMap.forceSum;
         _forceAverage = _forceMap.forceAverage;
 
-        float interpolant = Mathf.Exp(-_decayTime);
+        float interpolant = Mathf.Exp(-_decayTime * Time.deltaTime * 60);
         _smoothedForceAverage = Mathf.Lerp(_smoothedForceAverage, _forceAverage, interpolant);
 
         _convolutionFilter.SetFloat(_idInterpolant, interpolant);
