@@ -28,6 +28,15 @@ public class VolumeRenderer : MonoBehaviour
     [SerializeField]
     Vector2 _sweepSpeedRange = new Vector2(0.04f, 0.3f);
 
+    [SerializeField, Range(0, 0.01f)]
+    float _pressureThreshold = 0.0001f;
+
+    [SerializeField, Range(0, 0.05f)]
+    float _sweepSpeedThreshold = 0;
+
+    [SerializeField]
+    bool _pause = false;
+
     [SerializeField]
     bool _debug = false;
 
@@ -141,8 +150,26 @@ public class VolumeRenderer : MonoBehaviour
         }
         _propertyBlock.SetFloat(_idZOffset, _zOffset);
 
-        var lerp = Mathf.InverseLerp(_pressureRange.x, _pressureRange.y, _forceMap.smoothedForceAverage);
-        var speed = Mathf.Lerp(_sweepSpeedRange.x, _sweepSpeedRange.y, lerp);
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _pause = !_pause;
+        }
+
+        var force = _forceMap.smoothedForceAverage;
+        float speed;
+        if (_pause)
+        {
+            speed = 0f;
+        }
+        else if (force < _pressureThreshold)
+        {
+            speed = _sweepSpeedThreshold;
+        }
+        else
+        {
+            var lerp = Mathf.InverseLerp(_pressureRange.x, _pressureRange.y, _forceMap.smoothedForceAverage);
+            speed = Mathf.Lerp(_sweepSpeedRange.x, _sweepSpeedRange.y, lerp);
+        }
 
         // update zoffset by speed
         _zOffset = Mathf.Repeat(_zOffset + speed * Time.deltaTime, 1f);
