@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Klak.Sensel;
 
 public class ForceMapManager : MonoBehaviour
@@ -25,7 +26,7 @@ public class ForceMapManager : MonoBehaviour
     #region Serialized fields
 
     [SerializeField]
-    Shader _convolveShader;
+    Shader _convolveShader = null;
 
     [SerializeField, Range(0, 10)]
     float _decayTime = 1;
@@ -37,6 +38,9 @@ public class ForceMapManager : MonoBehaviour
         get { return _update; }
         set { _update = value; }
     }
+    
+    [SerializeField]
+    bool _smooth = true;
 
     #endregion
 
@@ -102,6 +106,7 @@ public class ForceMapManager : MonoBehaviour
         _forceMap = new ForceMap();
         _convolvedInput = new RenderTexture(FilteredInputTexture.width, FilteredInputTexture.height, 0, RenderTextureFormat.RFloat);
         _convolvedInput.wrapMode = TextureWrapMode.Clamp;
+        _convolvedInput.filterMode = FilterMode.Trilinear;
 
         _convolutionFilter.SetTexture("_RawInputTex", FilteredInputTexture);
     }
@@ -123,12 +128,13 @@ public class ForceMapManager : MonoBehaviour
         _forceSum = _forceMap.forceSum;
         _forceAverage = _forceMap.forceAverage;
 
-        float interpolant = Mathf.Exp(-_decayTime * Time.deltaTime * 60);
+        // float interpolant = Mathf.Exp(-_decayTime * Time.deltaTime * 60);
+        float interpolant = Mathf.Exp(-_decayTime);
         _smoothedForceAverage = Mathf.Lerp(_smoothedForceAverage, _forceAverage, interpolant);
 
         _convolutionFilter.SetFloat(_idInterpolant, interpolant);
 
-        Graphics.Blit(_convolvedInput, _convolvedInput, _convolutionFilter, 1);
+        Graphics.Blit(_convolvedInput, _convolvedInput, _convolutionFilter, _smooth ? 1 : 2);
     }
 
     private void OnDestroy()

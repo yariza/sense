@@ -38,5 +38,13 @@
             #pragma fragment frag_convolve
             ENDCG
         }
+        Pass
+        {
+            Blend One OneMinusSrcAlpha
+            CGPROGRAM
+            #pragma vertex vert_img
+            #pragma fragment frag_convolve
+            ENDCG
+        }
     }
 }

@@ -3,7 +3,10 @@ guid: 7ae9b00eed74048218d5544da1c2aa12
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - _volumeShader: {fileID: 7200000, guid: bafb13a43bd224de0b80a6229be6bcf2, type: 3}
+  - _cubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - _raymarchMaterial: {fileID: 2100000, guid: 3c816be820cc44b259743dbf9da20d39, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

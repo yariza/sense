@@ -7,10 +7,10 @@ public class ParticleRenderer : MonoBehaviour
     #region Serialized fields
 
     [SerializeField]
-    ComputeShader _particleKernel;
+    ComputeShader _particleKernel = null;
 
     [SerializeField]
-    Material _particleMaterial;
+    Material _particleMaterial = null;
 
     [SerializeField, Range(0, 1000000)]
     int _maxParticles = 1000;
