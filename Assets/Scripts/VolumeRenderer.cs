@@ -44,6 +44,8 @@ public class VolumeRenderer : MonoBehaviour
 
     #region Fields
 
+    Texture2D _prevInput;
+
     RenderTexture _volume;
     public RenderTexture volumeTexture
     {
@@ -56,10 +58,12 @@ public class VolumeRenderer : MonoBehaviour
     MaterialPropertyBlock _propertyBlock;
 
     int _idInputTex;
+    int _idPrevTex;
     int _idVolumeTex;
     int _idVolumeTex_Size;
     int _idVolumeTex_InvSize;
     int _idZOffset;
+    int _idZLerp;
 
     int _kernelInit;
     int _kernelCopyLayer;
@@ -74,10 +78,12 @@ public class VolumeRenderer : MonoBehaviour
         _forceMap.update = false;
 
         _idInputTex = Shader.PropertyToID("_InputTex");
+        _idPrevTex = Shader.PropertyToID("_PrevTex");
         _idVolumeTex = Shader.PropertyToID("_VolumeTex");
         _idVolumeTex_Size = Shader.PropertyToID("_VolumeTex_Size");
         _idVolumeTex_InvSize = Shader.PropertyToID("_VolumeTex_InvSize");
         _idZOffset = Shader.PropertyToID("_ZOffset");
+        _idZLerp = Shader.PropertyToID("_ZLerp");
 
         _kernelInit = _volumeShader.FindKernel("Init");
         _kernelCopyLayer = _volumeShader.FindKernel("CopyLayer");
@@ -112,6 +118,11 @@ public class VolumeRenderer : MonoBehaviour
 
     private void Start()
     {
+        var inputTex = _forceMap.ConvolvedInputTexture;
+        _prevInput = new Texture2D(inputTex.width, inputTex.height, TextureFormat.RFloat, false, true);
+
+        Graphics.CopyTexture(inputTex, _prevInput);
+
         const int groupSize = 8;
 
         int groupsX = (_volume.width + groupSize - 1) / groupSize;
@@ -124,6 +135,7 @@ public class VolumeRenderer : MonoBehaviour
         _volumeShader.Dispatch(_kernelInit, groupsX, groupsY, groupsZ);
 
         _volumeShader.SetTexture(_kernelCopyLayer, _idInputTex, _forceMap.ConvolvedInputTexture);
+        _volumeShader.SetTexture(_kernelCopyLayer, _idPrevTex, _prevInput);
         _volumeShader.SetTexture(_kernelCopyLayer, _idVolumeTex, _volume);
 
         _propertyBlock.SetTexture(_idVolumeTex, _volume);
@@ -135,19 +147,6 @@ public class VolumeRenderer : MonoBehaviour
     {
         _forceMap.UpdateForce();
 
-        {
-            // read input tex into current layer volume tex, denoted by _ZOffset
-
-            _volumeShader.SetFloat(_idZOffset, _zOffset);
-
-            const int groupSize = 8;
-
-            int groupsX = (_volume.width + groupSize - 1) / groupSize;
-            int groupsY = (_volume.height + groupSize - 1) / groupSize;
-            int groupsZ = 1;
-
-            _volumeShader.Dispatch(_kernelCopyLayer, groupsX, groupsY, groupsZ);
-        }
         _propertyBlock.SetFloat(_idZOffset, _zOffset);
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -171,12 +170,36 @@ public class VolumeRenderer : MonoBehaviour
             speed = Mathf.Lerp(_sweepSpeedRange.x, _sweepSpeedRange.y, lerp);
         }
 
+        var nextZ = _zOffset + speed * Time.deltaTime;
+        var curZ = _zOffset;
+        var stepZ = 1f / _volume.volumeDepth;
+
+        do {
+            // read input tex into current layer volume tex, denoted by _ZOffset
+
+            _volumeShader.SetFloat(_idZOffset, Mathf.Repeat(curZ, 1f));
+            _volumeShader.SetFloat(_idZLerp, Mathf.Clamp01(Mathf.InverseLerp(_zOffset, nextZ, curZ)));
+
+            const int groupSize = 8;
+
+            int groupsX = (_volume.width + groupSize - 1) / groupSize;
+            int groupsY = (_volume.height + groupSize - 1) / groupSize;
+            int groupsZ = 1;
+
+            _volumeShader.Dispatch(_kernelCopyLayer, groupsX, groupsY, groupsZ);
+
+            curZ += stepZ;
+
+        } while (curZ < nextZ);
+
         // update zoffset by speed
-        _zOffset = Mathf.Repeat(_zOffset + speed * Time.deltaTime, 1f);
+        _zOffset = Mathf.Repeat(nextZ, 1f);
 
         // render raymarched cube
         var mat = transform.localToWorldMatrix * Matrix4x4.TRS(_bounds.center, Quaternion.identity, _bounds.size);
         Graphics.DrawMesh(_cubeMesh, mat, _raymarchMaterial, 0, null, 0, _propertyBlock, false, false);
+
+        Graphics.CopyTexture(_forceMap.ConvolvedInputTexture, _prevInput);
     }
 
     private void OnDrawGizmos()

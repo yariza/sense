@@ -4,6 +4,7 @@
     {
         _MainTex("", 2D) = ""
         _Sensitivity("", Float) = 0.2
+        _Power("", Float) = 1
         _Alpha("", Float) = 1
     }
 
@@ -16,6 +17,7 @@
 
     float _Sensitivity;
     float _Alpha;
+    float _Power;
 
     half4 frag_prefilter(v2f_img input) : SV_Target
     {
@@ -26,7 +28,7 @@
         uv = uv * 1.5 - 0.25;
         // uv = uv * 2.0 - 0.5;
         if (any(uv < float2(0,0) || uv > float2(1,1))) return half4(0,0,0,0);
-        return tex2D(_MainTex, uv).r * _Sensitivity;
+        return pow(tex2D(_MainTex, uv).r * _Sensitivity, _Power);
     }
 
     half4 frag_downsample(v2f_img input) : SV_Target

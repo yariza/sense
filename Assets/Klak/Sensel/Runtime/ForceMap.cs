@@ -32,9 +32,15 @@ namespace Klak.Sensel
         float _forceSum;
         float _forceAverage;
 
+        int _idSensitivity;
+        int _idPower;
+
         #endregion
 
         #region Public properties
+
+        public float sensitivity = 0.2f;
+        public float power = 1;
 
         public Texture RawInputTexture {
             get { return _rawInput; }
@@ -87,6 +93,9 @@ namespace Klak.Sensel
 
             // Single pixel texture used to store the total of input force
             _totalInput = new RenderTexture(1, 1, 0, RenderTextureFormat.RHalf);
+
+            _idSensitivity = Shader.PropertyToID("_Sensitivity");
+            _idPower = Shader.PropertyToID("_Power");
         }
 
         public void Dispose()
@@ -123,6 +132,9 @@ namespace Klak.Sensel
 
             _forceSum = sum;
             _forceAverage = average;
+
+            _filter.SetFloat(_idSensitivity, sensitivity);
+            _filter.SetFloat(_idPower, power);
 
             // Apply the prefilter (vertical flip).
             Graphics.Blit(_rawInput, _filteredInput, _filter, 0);

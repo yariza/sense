@@ -2,11 +2,13 @@
 #pragma kernel CopyLayer
 
 Texture2D<float> _InputTex;
+Texture2D<float> _PrevTex;
 SamplerState sampler_InputTex;
 RWTexture3D<float> _VolumeTex;
 uint3 _VolumeTex_Size;
 
 float _ZOffset;
+float _ZLerp;
 
 [numthreads(8,8,8)]
 void Init(uint3 id : SV_DISPATCHTHREADID)
@@ -25,6 +27,9 @@ void CopyLayer(uint3 id : SV_DISPATCHTHREADID)
 
     float2 uv = (float2)id.xy / (float2)_VolumeTex_Size.xy;
     float val = _InputTex.SampleLevel(sampler_InputTex, uv, 0);
+    float prev = _PrevTex.SampleLevel(sampler_InputTex, uv, 0);
+
+    val = lerp(prev, val, _ZLerp);
 
     _VolumeTex[uint3(id.xy, z)] = val;
 }

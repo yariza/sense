@@ -28,8 +28,17 @@ public class ForceMapManager : MonoBehaviour
     [SerializeField]
     Shader _convolveShader = null;
 
+    [SerializeField]
+    Material _blitMat = null;
+
     [SerializeField, Range(0, 10)]
     float _decayTime = 1;
+
+    [SerializeField, Range(0, 10)]
+    float _sensitivity = 0.2f;
+
+    [SerializeField, Range(0.01f, 5)]
+    float _power = 1;
 
     [SerializeField]
     bool _update = true;
@@ -65,6 +74,12 @@ public class ForceMapManager : MonoBehaviour
     public Texture TotalInputTexture
     {
         get { return _forceMap.TotalInputTexture; }
+    }
+
+    RenderTexture _mappedInput;
+    public Texture MappedInputTexture
+    {
+        get { return _mappedInput; }
     }
 
     RenderTexture _convolvedInput;
@@ -108,6 +123,10 @@ public class ForceMapManager : MonoBehaviour
         _convolvedInput.wrapMode = TextureWrapMode.Clamp;
         _convolvedInput.filterMode = FilterMode.Trilinear;
 
+        _mappedInput = new RenderTexture(FilteredInputTexture.width, FilteredInputTexture.height, 0, RenderTextureFormat.RFloat);
+        _mappedInput.wrapMode = TextureWrapMode.Clamp;
+        _mappedInput.filterMode = FilterMode.Trilinear;
+
         _convolutionFilter.SetTexture("_RawInputTex", FilteredInputTexture);
     }
 
@@ -124,6 +143,9 @@ public class ForceMapManager : MonoBehaviour
 
     public void UpdateForce()
     {
+        _forceMap.sensitivity = _sensitivity;
+        _forceMap.power = _power;
+
         _forceMap.Update();
         _forceSum = _forceMap.forceSum;
         _forceAverage = _forceMap.forceAverage;
