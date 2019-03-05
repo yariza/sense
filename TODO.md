@@ -1,7 +1,7 @@
 # todo
 
-[x] fix shimmering effect
-    [x] look at creative blend modes in sensel convolve
-[ ] sound
+- [x] fix shimmering effect
+    - look at creative blend modes in sensel convolve
+- [ ] sound
     - sigh
-[ ] DOCUMENTATION
+- [ ] DOCUMENTATION
