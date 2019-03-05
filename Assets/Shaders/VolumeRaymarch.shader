@@ -7,6 +7,8 @@
         _Power("Power", Range(0.01, 10)) = 1
         _Threshold ("Threshold", Float) = 0.3
         _RimPowers("Rim Powers RGB", Vector) = (1,1,1)
+        _ScrollOffset ("Scroll Offset", Float) = 5
+        _ScrollScale ("Scroll Scale", Float) = 5
     }
     SubShader
     {
