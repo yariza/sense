@@ -50,14 +50,14 @@ bool rayBoxIntersection(Ray r, Box b, out float tNear, out float tFar)
     tNear = max(tNear, 0.0);
 
     // make sure that tFar sits slightly before the grid boundary
-    tFar -= 0.00001;
+    tFar -= 0.001;
     tNear += 0.00001;
     return tFar > tNear;
 }
 
 float map(float3 pos)
 {
-    float v = _VolumeTex.SampleLevel(sampler_VolumeTex, pos.xzy * float3(1.0, 1.0, 1.0 - _VolumeTex_InvSize.z * 3) + float3(0.5, 0.5, 0.5 + _ZOffset), 0).r;
+    float v = _VolumeTex.SampleLevel(sampler_VolumeTex, pos.xzy * float3(1.0, 1.0, 1.0 - _VolumeTex_InvSize.z * 4) + float3(0.5, 0.5, 0.5 + _ZOffset - _VolumeTex_InvSize.z * 5), 0).r;
     v = pow(v, _Power) * _Scale;
 
     return _Threshold - v;

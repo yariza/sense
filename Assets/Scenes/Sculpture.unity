@@ -213,11 +213,11 @@ MonoBehaviour:
   _volumeShader: {fileID: 7200000, guid: bafb13a43bd224de0b80a6229be6bcf2, type: 3}
   _cubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   _raymarchMaterial: {fileID: 2100000, guid: 3c816be820cc44b259743dbf9da20d39, type: 2}
-  _resolution: {x: 128, y: 72, z: 64}
+  _resolution: {x: 128, y: 72, z: 1024}
   _bounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 6.4, y: 7, z: 3.6}
-  _pressureRange: {x: 0, y: 1.6459038}
+  _pressureRange: {x: 0, y: 0.48025963}
   _sweepSpeedRange: {x: 0.03, y: 0.3}
   _pressureThreshold: 0.01
   _sweepSpeedThreshold: 0.02
@@ -281,7 +281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe7ad7d0547014c0796112b613cfc3ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lerpSpeed: 1.5
+  _lerpSpeed: 1
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,7 +408,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _convolveShader: {fileID: 4800000, guid: c03eada4e88574381a80704d37f6b22a, type: 3}
+  _blitMat: {fileID: 0}
   _decayTime: 3
+  _sensitivity: 0.4
+  _power: 0.7
   _update: 1
   _smooth: 1
 --- !u!4 &790350669
