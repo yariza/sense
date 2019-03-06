@@ -22,7 +22,7 @@ public class VolumeRenderer : MonoBehaviour
     [SerializeField]
     Bounds _bounds = new Bounds(Vector3.zero, new Vector3(12.8f, 20f, 7.2f));
 
-    [SerializeField, MinMax(0, 10)]
+    [SerializeField, MinMax(0, 10, ShowEditRange = true)]
     Vector2 _pressureRange = new Vector2(0, 3);
 
     [SerializeField]
@@ -145,14 +145,14 @@ public class VolumeRenderer : MonoBehaviour
 
     private void Update()
     {
-        _forceMap.UpdateForce();
-
-        _propertyBlock.SetFloat(_idZOffset, _zOffset);
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
             _pause = !_pause;
         }
+
+        _forceMap.UpdateForce(!_pause);
+
+        _propertyBlock.SetFloat(_idZOffset, _zOffset);
 
         var force = _forceMap.smoothedForceAverage;
         float speed;
@@ -174,23 +174,27 @@ public class VolumeRenderer : MonoBehaviour
         var curZ = _zOffset;
         var stepZ = 1f / _volume.volumeDepth;
 
-        do {
-            // read input tex into current layer volume tex, denoted by _ZOffset
+        if (!_pause)
+        {
+            do {
+                // read input tex into current layer volume tex, denoted by _ZOffset
 
-            _volumeShader.SetFloat(_idZOffset, Mathf.Repeat(curZ, 1f));
-            _volumeShader.SetFloat(_idZLerp, Mathf.Clamp01(Mathf.InverseLerp(_zOffset, nextZ, curZ)));
+                // var z = Mathf.Floor(curZ * _volume.volumeDepth) / _volume.volumeDepth;
+                _volumeShader.SetFloat(_idZOffset, Mathf.Repeat(curZ, 1f));
+                _volumeShader.SetFloat(_idZLerp, Mathf.Clamp01(Mathf.InverseLerp(_zOffset, nextZ, curZ)));
 
-            const int groupSize = 8;
+                const int groupSize = 8;
 
-            int groupsX = (_volume.width + groupSize - 1) / groupSize;
-            int groupsY = (_volume.height + groupSize - 1) / groupSize;
-            int groupsZ = 1;
+                int groupsX = (_volume.width + groupSize - 1) / groupSize;
+                int groupsY = (_volume.height + groupSize - 1) / groupSize;
+                int groupsZ = 1;
 
-            _volumeShader.Dispatch(_kernelCopyLayer, groupsX, groupsY, groupsZ);
+                _volumeShader.Dispatch(_kernelCopyLayer, groupsX, groupsY, groupsZ);
 
-            curZ += stepZ;
+                curZ += stepZ;
 
-        } while (curZ < nextZ);
+            } while (curZ < nextZ);
+        }
 
         // update zoffset by speed
         _zOffset = Mathf.Repeat(nextZ, 1f);
@@ -199,7 +203,10 @@ public class VolumeRenderer : MonoBehaviour
         var mat = transform.localToWorldMatrix * Matrix4x4.TRS(_bounds.center, Quaternion.identity, _bounds.size);
         Graphics.DrawMesh(_cubeMesh, mat, _raymarchMaterial, 0, null, 0, _propertyBlock, false, false);
 
-        Graphics.CopyTexture(_forceMap.ConvolvedInputTexture, _prevInput);
+        // if (!_pause)
+        {
+            Graphics.CopyTexture(_forceMap.ConvolvedInputTexture, _prevInput);
+        }
     }
 
     private void OnDrawGizmos()

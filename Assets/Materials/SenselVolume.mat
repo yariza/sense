@@ -69,8 +69,8 @@ Material:
     - _Parallax: 0.02
     - _Power: 2
     - _Scale: 1
-    - _ScrollOffset: 0
-    - _ScrollScale: 24.9
+    - _ScrollOffset: 0.07
+    - _ScrollScale: 5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

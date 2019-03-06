@@ -50,7 +50,7 @@ public class ForceMapManager : MonoBehaviour
     
     [SerializeField]
     bool _smooth = true;
-
+    
     #endregion
 
     #region Other Fields
@@ -138,10 +138,10 @@ public class ForceMapManager : MonoBehaviour
 
     private void Update()
     {
-        if (_update) UpdateForce();
+        if (_update) UpdateForce(true);
     }
 
-    public void UpdateForce()
+    public void UpdateForce(bool convolve = true)
     {
         _forceMap.sensitivity = _sensitivity;
         _forceMap.power = _power;
@@ -150,13 +150,17 @@ public class ForceMapManager : MonoBehaviour
         _forceSum = _forceMap.forceSum;
         _forceAverage = _forceMap.forceAverage;
 
-        // float interpolant = Mathf.Exp(-_decayTime * Time.deltaTime * 60);
-        float interpolant = Mathf.Exp(-_decayTime);
-        _smoothedForceAverage = Mathf.Lerp(_smoothedForceAverage, _forceAverage, interpolant);
+        if (convolve)
+        {
+            // float interpolant = Mathf.Exp(-_decayTime * Time.deltaTime * 60);
+            float interpolant = Mathf.Exp(-_decayTime);
+            _smoothedForceAverage = Mathf.Lerp(_smoothedForceAverage, _forceAverage, interpolant);
 
-        _convolutionFilter.SetFloat(_idInterpolant, interpolant);
+            _convolutionFilter.SetFloat(_idInterpolant, interpolant);
 
-        Graphics.Blit(_convolvedInput, _convolvedInput, _convolutionFilter, _smooth ? 1 : 2);
+            Graphics.Blit(_convolvedInput, _convolvedInput, _convolutionFilter, _smooth ? 1 : 2);
+        }
+
     }
 
     private void OnDestroy()

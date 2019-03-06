@@ -52,7 +52,7 @@ bool rayBoxIntersection(Ray r, Box b, out float tNear, out float tFar)
     tNear = max(tNear, 0.0);
 
     // make sure that tFar sits slightly before the grid boundary
-    tFar -= 0.001;
+    tFar -= 0.005;
     tNear += 0.00001;
     return tFar > tNear;
 }
@@ -85,7 +85,7 @@ Intersection intersect(float3 ro, float3 rd, float maxd)
         {
             break;
         }
-        t += min(max(h * 0.3, 0.001), 0.05);
+        t += max(h * 0.3, 0.001);
         h = map( ro+rd*t );
     }
 
