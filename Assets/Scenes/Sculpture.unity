@@ -411,7 +411,7 @@ MonoBehaviour:
   _oscAddress: /force
   _sensitivity: 0.001
   _power: 1
-  _sendInterval: 0.1
+  _sendInterval: 0.033
 --- !u!4 &660688172
 Transform:
   m_ObjectHideFlags: 0
